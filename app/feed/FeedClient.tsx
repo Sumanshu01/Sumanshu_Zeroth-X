@@ -5,6 +5,8 @@ import SkeletonCard from '@/components/SkeletonCard';
 import EmptyState from '@/components/EmptyState';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+
 interface Issue {
   issueId: number;
   title: string;
@@ -18,6 +20,21 @@ interface Issue {
   createdAt: string;
   [key: string]: unknown;
 }
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 100 } }
+};
 
 export default function FeedClient() {
   const router = useRouter();
@@ -99,39 +116,52 @@ export default function FeedClient() {
   });
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-foreground mb-6">Your Recommended Issues</h1>
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative">
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10" />
+      <div className="absolute top-[40%] left-[-20%] w-[600px] h-[600px] bg-accent-purple/5 rounded-full blur-[120px] pointer-events-none -z-10" />
 
-      <FilterBar
-        onLanguageChange={setLanguageFilter}
-        onStarsChange={setStarsFilter}
-        onSortChange={setSortBy}
-      />
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <h1 className="text-4xl font-extrabold text-foreground mb-8 font-heading tracking-tight">
+          Your Recommended <span className="text-primary">Issues</span>
+        </h1>
+        
+        <FilterBar
+          onLanguageChange={setLanguageFilter}
+          onStarsChange={setStarsFilter}
+          onSortChange={setSortBy}
+        />
+      </motion.div>
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
           {[1, 2, 3, 4, 5, 6].map(n => <SkeletonCard key={n} />)}
         </div>
       ) : filteredIssues.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6 mt-4"
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+        >
           {filteredIssues.map((issue: Issue) => (
-            <IssueCard
-              key={issue.issueId}
-              issue={issue}
-              isBookmarked={bookmarks.has(issue.issueId)}
-              onBookmarkToggle={handleBookmarkToggle}
-            />
+            <motion.div key={issue.issueId} variants={itemVariants} layout className="h-full">
+              <IssueCard
+                issue={issue}
+                isBookmarked={bookmarks.has(issue.issueId)}
+                onBookmarkToggle={handleBookmarkToggle}
+              />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       ) : (
-        <div className="mt-8">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-8">
           <EmptyState
             title="No issues found"
             description="We couldn't find any issues matching your criteria. Try adjusting your filters or broadening your skills."
             ctaText="Update Skills"
             ctaHref="/skills"
           />
-        </div>
+        </motion.div>
       )}
     </main>
   );

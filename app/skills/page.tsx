@@ -50,10 +50,17 @@ export default function SkillsPage() {
     setError('');
     setSaving(true);
     
-    await fetch('/api/prefs', {
+    const res = await fetch('/api/prefs', {
       method: 'POST',
       body: JSON.stringify({ skills: selectedSkills, experience, languages: selectedLangs }),
     });
+    
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error || 'Failed to save preferences');
+      setSaving(false);
+      return;
+    }
     
     router.push('/feed');
   };

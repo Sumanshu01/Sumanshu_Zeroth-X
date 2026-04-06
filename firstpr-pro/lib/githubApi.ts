@@ -1,0 +1,69 @@
+export async function searchGithubIssues(languages: string[], accessToken: string, page = 1) {
+  if (!languages || languages.length === 0) {
+    return _fetchIssuesForLanguage('', accessToken, page);
+  }
+
+  const promises = languages.map(lang => _fetchIssuesForLanguage(lang, accessToken, page));
+  const results = await Promise.all(promises);
+  
+  const allItems = results.flat();
+  const uniqueItems = Array.from(new Map(allItems.map(item => [item.id, item])).values());
+  
+  uniqueItems.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  
+  return uniqueItems.slice(0, 50);
+}
+
+async function _fetchIssuesForLanguage(lang: string, accessToken: string, page: number) {
+  const queryParts = [
+    'is:issue',
+    'is:open',
+    'label:"good first issue"',
+  ];
+
+  if (lang) {
+    queryParts.push(`language:${lang}`);
+  }
+
+  const q = encodeURIComponent(queryParts.join(' '));
+  const url = `https://api.github.com/search/issues?q=${q}&sort=created&order=desc&per_page=50&page=${page}`;
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/vnd.github.v3+json',
+    },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    if (response.status === 403 || response.status === 429) {
+      throw new Error(`GitHub API rate limit exceeded. Please try again later.`);
+    }
+    throw new Error(`Failed to fetch from GitHub: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.items || [];
+}
+
+export async function fetchRepoDetails(repoFullName: string, accessToken: string) {
+  const url = `https://api.github.com/repos/${repoFullName}`;
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/vnd.github.v3+json',
+    },
+    next: { revalidate: 3600 },
+  });
+
+  if (!response.ok) {
+    return { stars: 0, language: null };
+  }
+
+  const data = await response.json();
+  return {
+    stars: data.stargazers_count,
+    language: data.language,
+  };
+}

@@ -85,7 +85,6 @@ function MilestoneBadge({ milestone }: { milestone: Milestone }) {
 
 function ContributionItem({ item }: { item: Contribution }) {
   const isMerged = item.state === 'closed' && item.mergedAt;
-  const isClosed = item.state === 'closed' && !item.mergedAt;
   const isOpen = item.state === 'open';
 
   return (
@@ -146,8 +145,8 @@ export default function AnalyticsDashboard() {
         }
         const json = await res.json();
         setData(json);
-      } catch (err: any) {
-        setError(err.message || 'An error occurred');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
       }

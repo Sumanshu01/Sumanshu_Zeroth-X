@@ -10,7 +10,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { username, accessToken } = session.user as any;
+    const { username, accessToken } = session.user as { username?: string; accessToken?: string };
 
     if (!username) {
       return NextResponse.json({ error: 'GitHub username not found' }, { status: 400 });
@@ -22,11 +22,23 @@ export async function GET() {
     let totalIssues = 0;
     let mergedPRs = 0;
 
-    const recentContributions = contributions.map((item: any) => {
+    interface GithubIssue {
+      id: number;
+      title: string;
+      html_url: string;
+      state: string;
+      created_at: string;
+      repository_url: string;
+      pull_request?: {
+        merged_at: string | null;
+      };
+    }
+
+    const recentContributions = (contributions as GithubIssue[]).map((item) => {
       const isPR = !!item.pull_request;
       if (isPR) {
         totalPRs++;
-        if (item.pull_request.merged_at) {
+        if (item.pull_request?.merged_at) {
           mergedPRs++;
         }
       } else {
@@ -40,14 +52,14 @@ export async function GET() {
         type: isPR ? 'pr' : 'issue',
         state: item.state,
         createdAt: item.created_at,
-        mergedAt: isPR ? item.pull_request.merged_at : null,
+        mergedAt: isPR ? item.pull_request?.merged_at : null,
         repo: item.repository_url.split('/').slice(-2).join('/'),
       };
     });
 
     // Simple Streak Logic: Calculate consecutive days starting from today backwards based on createdAt
     let currentStreak = 0;
-    const dates = new Set(recentContributions.map((c: any) => new Date(c.createdAt).toDateString()));
+    const dates = new Set(recentContributions.map((c) => new Date(c.createdAt).toDateString()));
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 

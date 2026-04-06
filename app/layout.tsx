@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Syne, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import Navbar from '@/components/Navbar';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const syne = Syne({ subsets: ["latin"], variable: "--font-syne" });
+const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains" });
 
 export const metadata: Metadata = {
-  title: "FirstPR Pro",
+  title: "FirstPR Pro - Dark Tech",
   description: "Find Your First Open Source Contribution",
 };
-
-import Navbar from '@/components/Navbar';
 
 export default function RootLayout({
   children,
@@ -17,8 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light">
-      <body className={`${inter.className} bg-background text-foreground min-h-screen antialiased`}>
+    <html lang="en" className="dark">
+      <body className={`${inter.variable} ${syne.variable} ${jetbrains.variable} font-sans bg-background text-foreground min-h-screen antialiased`}>
         <Navbar />
         {children}
       </body>

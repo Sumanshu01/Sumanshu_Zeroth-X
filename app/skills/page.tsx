@@ -3,6 +3,8 @@
 import SkillChip from '@/components/SkillChip';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 
 const LANGUAGES = ['JavaScript', 'TypeScript', 'Python', 'Go', 'Rust', 'Java', 'C++', 'Ruby', 'PHP', 'Swift', 'Kotlin', 'Dart'];
 const FRAMEWORKS = ['React', 'Next.js', 'Vue', 'Angular', 'Django', 'FastAPI', 'Spring', 'Flutter'];
@@ -65,100 +67,137 @@ export default function SkillsPage() {
     router.push('/feed');
   };
 
+  const totalSelected = selectedSkills.length + selectedLangs.length;
+
   if (loading) return null;
 
   return (
-    <>
-      <main className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Let&apos;s set up your profile</h1>
-        <p className="text-secondaryText mb-10">Select your skills so we can find the best issues for you.</p>
+    <div className="relative min-h-screen bg-darkbase py-12 overflow-x-hidden">
+      {/* Background Animated Gradient Mesh */}
+      <div className="fixed inset-0 z-0 pointer-events-none opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] blend-overlay" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-accent-purple/10 rounded-full blur-[120px] pointer-events-none" />
 
-        <div className="space-y-8 bg-card p-6 md:p-10 rounded-2xl border border-border shadow-sm">
-          <div>
-            <h2 className="text-xl font-semibold mb-4 text-foreground">Programming Languages</h2>
-            <div className="flex flex-wrap gap-3">
-              {LANGUAGES.map(lang => (
-                <SkillChip 
-                  key={lang} 
-                  label={lang} 
-                  selected={selectedLangs.includes(lang)} 
-                  onClick={() => setSelectedLangs(prev => prev.includes(lang) ? prev.filter(l => l !== lang) : [...prev, lang])} 
-                />
-              ))}
-            </div>
+      <main className="relative z-10 max-w-4xl mx-auto px-4 md:px-8 pb-32">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <h1 className="text-4xl font-extrabold text-foreground mb-3 font-heading tracking-tight">Setup your <span className="text-primary">developer profile</span></h1>
+          <p className="text-secondaryText mb-12 text-lg">Select your technical stack so we can find the perfect first issues for you.</p>
+
+          <div className="space-y-12 glass-card p-6 md:p-10 rounded-3xl relative overflow-hidden backdrop-blur-2xl bg-darkbase/60">
+            
+            {/* Languages */}
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
+              <h2 className="text-xl font-semibold mb-6 text-foreground font-heading flex items-center gap-3">
+                <span className="w-1 h-6 bg-primary rounded-full"></span>
+                Programming Languages
+              </h2>
+              <div className="flex flex-wrap gap-4">
+                {LANGUAGES.map(lang => (
+                  <SkillChip key={lang} label={lang} color="primary" selected={selectedLangs.includes(lang)}
+                    onClick={() => setSelectedLangs(prev => prev.includes(lang) ? prev.filter(l => l !== lang) : [...prev, lang])} />
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Frameworks */}
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+              <h2 className="text-xl font-semibold mb-6 text-foreground font-heading flex items-center gap-3">
+                <span className="w-1 h-6 bg-accent-purple rounded-full"></span>
+                Frameworks & Libraries
+              </h2>
+              <div className="flex flex-wrap gap-4">
+                {FRAMEWORKS.map(fw => (
+                  <SkillChip key={fw} label={fw} color="purple" selected={selectedSkills.includes(fw)} onClick={() => toggleSkill(fw)} />
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Other tools */}
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
+              <h2 className="text-xl font-semibold mb-6 text-foreground font-heading flex items-center gap-3">
+                <span className="w-1 h-6 bg-success rounded-full"></span>
+                Other Technologies
+              </h2>
+              <div className="flex flex-wrap gap-4 mb-6">
+                {OTHER.map(o => (
+                  <SkillChip key={o} label={o} color="success" selected={selectedSkills.includes(o)} onClick={() => toggleSkill(o)} />
+                ))}
+                {selectedSkills.filter(s => !FRAMEWORKS.includes(s) && !OTHER.includes(s)).map(s => (
+                  <SkillChip key={s} label={s} color="success" selected={true} onClick={() => toggleSkill(s)} />
+                ))}
+              </div>
+              <input 
+                type="text" 
+                placeholder="Type a custom skill and press Enter..." 
+                value={customSkill}
+                onChange={(e) => setCustomSkill(e.target.value)}
+                onKeyDown={handleCustomSkill}
+                className="w-full max-w-sm px-5 py-3 border border-border rounded-xl bg-darkcard text-foreground focus:outline-none focus:ring-2 focus:ring-success/50 placeholder-secondaryText font-mono text-sm transition-all shadow-inner"
+              />
+            </motion.div>
+
+            {/* Experience */}
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
+              <h2 className="text-xl font-semibold mb-6 text-foreground font-heading flex items-center gap-3">
+                <span className="w-1 h-6 bg-secondaryText rounded-full"></span>
+                Experience Level
+              </h2>
+              <div className="flex flex-wrap gap-4">
+                {(['beginner', 'intermediate', 'advanced'] as const).map(level => (
+                  <label key={level} className={`flex items-center gap-3 cursor-pointer text-foreground font-medium px-5 py-3 rounded-xl border transition-all ${experience === level ? 'border-primary bg-primary/10' : 'border-border bg-darkcard hover:border-border/80'}`}>
+                    <input 
+                      type="radio" 
+                      name="experience" 
+                      value={level} 
+                      checked={experience === level} 
+                      onChange={() => setExperience(level)} 
+                      className="hidden" 
+                    />
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${experience === level ? 'border-primary' : 'border-secondaryText'}`}>
+                       {experience === level && <div className="w-2 h-2 rounded-full bg-primary" />}
+                    </div>
+                    <span className="capitalize">{level}</span>
+                  </label>
+                ))}
+              </div>
+            </motion.div>
+            
+            {error && (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-400 font-mono text-sm bg-red-400/10 px-4 py-3 rounded-xl border border-red-400/20">
+                {error}
+              </motion.p>
+            )}
+
           </div>
+        </motion.div>
+      </main>
 
-          <div>
-            <h2 className="text-xl font-semibold mb-4 text-foreground">Frameworks & Libraries</h2>
-            <div className="flex flex-wrap gap-3">
-              {FRAMEWORKS.map(fw => (
-                <SkillChip 
-                  key={fw} 
-                  label={fw} 
-                  selected={selectedSkills.includes(fw)} 
-                  onClick={() => toggleSkill(fw)} 
-                />
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h2 className="text-xl font-semibold mb-4 text-foreground">Other Technologies</h2>
-            <div className="flex flex-wrap gap-3 mb-4">
-              {OTHER.map(o => (
-                <SkillChip 
-                  key={o} 
-                  label={o} 
-                  selected={selectedSkills.includes(o)} 
-                  onClick={() => toggleSkill(o)} 
-                />
-              ))}
-              {selectedSkills.filter(s => !FRAMEWORKS.includes(s) && !OTHER.includes(s)).map(s => (
-                <SkillChip key={s} label={s} selected={true} onClick={() => toggleSkill(s)} />
-              ))}
-            </div>
-            <input 
-              type="text" 
-              placeholder="Type a custom skill and press Enter..." 
-              value={customSkill}
-              onChange={(e) => setCustomSkill(e.target.value)}
-              onKeyDown={handleCustomSkill}
-              className="w-full max-w-sm px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder-secondaryText transition-all"
-            />
-          </div>
-
-          <div>
-            <h2 className="text-xl font-semibold mb-4 text-foreground">Experience Level</h2>
-            <div className="flex gap-6">
-              {['beginner', 'intermediate', 'advanced'].map(level => (
-                <label key={level} className="flex items-center gap-2 cursor-pointer text-foreground font-medium">
-                  <input 
-                    type="radio" 
-                    name="experience" 
-                    value={level} 
-                    checked={experience === level}
-                    onChange={(e) => setExperience(e.target.value as 'beginner'|'intermediate'|'advanced')}
-                    className="w-4 h-4 text-primary bg-background border-border focus:ring-primary focus:ring-2"
-                  />
-                  <span className="capitalize">{level}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          
-          {error && <p className="text-red-500 font-medium bg-red-50 px-4 py-2 rounded-md border border-red-200">{error}</p>}
-
-          <div className="pt-6 border-t border-border">
+      {/* Floating Sticky Button */}
+      <AnimatePresence>
+        {totalSelected > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            className="fixed bottom-8 left-0 right-0 flex justify-center z-50 pointer-events-none px-4"
+          >
             <button 
               onClick={handleSave} 
               disabled={saving}
-              className="bg-primary hover:bg-primary/90 text-white font-medium px-8 py-3 rounded-lg shadow-sm w-full sm:w-auto transition-transform hover:scale-[1.02] active:scale-[0.98]"
+              className="pointer-events-auto relative group flex items-center gap-4 bg-foreground text-darkbase font-bold text-lg px-8 py-4 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-transform hover:scale-105 active:scale-95 border border-white/20"
             >
-              {saving ? 'Saving...' : 'Find My Issues'}
+              <div className="absolute inset-0 rounded-full bg-white blur-md opacity-20 group-hover:opacity-40 transition duration-300"></div>
+              <span className="relative z-10">{saving ? 'Saving...' : 'Continue'}</span>
+              {!saving && (
+                <div className="relative z-10 flex items-center gap-2">
+                   <div className="bg-darkbase text-white text-xs px-2 py-0.5 rounded-full font-mono">{totalSelected}</div>
+                   <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                </div>
+              )}
             </button>
-          </div>
-        </div>
-      </main>
-    </>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

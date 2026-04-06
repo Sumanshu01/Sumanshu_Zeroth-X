@@ -39,6 +39,11 @@ export async function GET() {
       if (isPR) {
         totalPRs++;
         if (item.pull_request?.merged_at) {
+    const recentContributions = contributions.map((item: any) => {
+      const isPR = !!item.pull_request;
+      if (isPR) {
+        totalPRs++;
+        if (item.pull_request.merged_at) {
           mergedPRs++;
         }
       } else {
@@ -53,6 +58,7 @@ export async function GET() {
         state: item.state,
         createdAt: item.created_at,
         mergedAt: isPR ? item.pull_request?.merged_at : null,
+        mergedAt: isPR ? item.pull_request.merged_at : null,
         repo: item.repository_url.split('/').slice(-2).join('/'),
       };
     });
@@ -60,6 +66,7 @@ export async function GET() {
     // Simple Streak Logic: Calculate consecutive days starting from today backwards based on createdAt
     let currentStreak = 0;
     const dates = new Set(recentContributions.map((c) => new Date(c.createdAt).toDateString()));
+    const dates = new Set(recentContributions.map((c: any) => new Date(c.createdAt).toDateString()));
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
